@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # try to stop all existing server
-nginx -s stop
+nginx -s stop 2>/dev/null
 
 # start nginx reverse proxy server
 nginx -c ~/dlna-proxy/nginx.conf
