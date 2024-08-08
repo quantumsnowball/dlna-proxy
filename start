@@ -4,6 +4,7 @@
 if nginx -s stop 2>/dev/null; then
   echo -e "\nProxy server stopped\n"
 fi
+pkill -e rclone
 
 # start nginx reverse proxy server
 nginx -c ~/dlna-proxy/nginx.conf
@@ -24,6 +25,6 @@ if nginx -s stop 2>/dev/null; then
   echo -e "\nProxy server stopped\n"
 fi
 
-# ensure sure everything is killed
+# after use, ensure sure everything is killed
 pkill -e nginx
 pkill -e rclone
