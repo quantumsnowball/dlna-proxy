@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# try to stop all existing server
+nginx -s stop
+
+# start nginx reverse proxy server
+nginx -c ~/dlna-proxy/nginx.conf
+
+# start rclone dlna server
+rclone serve dlna --name DLNA --addr localhost:7879 qsc-r:DLNA
+
