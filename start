@@ -7,6 +7,11 @@ fi
 
 # start nginx reverse proxy server
 nginx -c ~/dlna-proxy/nginx.conf
+if [ $? -eq 0 ]; then
+  echo -e "\nProxy server started\n"
+else
+  echo -e "\nFAILED: Failed to start reverse proxy server\n"
+fi
 
 # start rclone dlna server
 rclone serve dlna --name DLNA --addr localhost:7879 qsc-r:DLNA
