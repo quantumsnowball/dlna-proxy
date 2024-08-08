@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # kill existing nginx processes
-pkill -e nginx
+killall -q -v -w nginx
 
 # kill existing rclone processes
-pkill -e rclone
+killall -q -v -w rclone
