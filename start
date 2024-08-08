@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# try to stop all existing server
-nginx -s stop 2>/dev/null
+# before use, try to stop all existing server
+if nginx -s stop 2>/dev/null; then
+  echo -e "\nProxy server stopped\n"
+fi
 
 # start nginx reverse proxy server
 nginx -c ~/dlna-proxy/nginx.conf
@@ -12,5 +14,8 @@ rclone serve dlna --name DLNA --addr localhost:7879 qsc-r:DLNA
 # wait for the rclone serve process to be interrupted (Ctrl+C)
 wait $!
 
-# stop the nginx server
-nginx -s stop
+# after use, try to stop all existing server
+if nginx -s stop 2>/dev/null; then
+  echo -e "\nProxy server stopped\n"
+fi
+
