@@ -7,9 +7,9 @@ killall -q -v -w rclone
 # start nginx reverse proxy server
 nginx -c ~/dlna-proxy/nginx.conf
 if [ $? -eq 0 ]; then
-  echo -e "\nProxy server started\n"
+  printf "\nProxy server started\n\n"
 else
-  echo -e "\nFAILED: Failed to start reverse proxy server\n"
+  printf "\nFAILED: Failed to start reverse proxy server\n\n"
 fi
 
 # start rclone dlna server
@@ -20,9 +20,7 @@ wait $!
 
 # after use, try to stop all existing server
 if nginx -s stop 2>/dev/null; then
-  echo -e "\nProxy server stopped\n"
+  printf "\nProxy server stopped\n\n"
 fi
-
-# after use, ensure sure everything is killed
 killall -q -v -w nginx
 killall -q -v -w rclone
