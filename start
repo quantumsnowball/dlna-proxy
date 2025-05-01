@@ -5,22 +5,25 @@ killall -q -v -w nginx
 killall -q -v -w rclone
 killall -q -v -w python
 
+
 # start nginx reverse proxy server
 nginx -c ~/dlna-proxy/nginx.conf
 if [ $? -eq 0 ]; then
-  printf "\nProxy server started\n\n"
+  printf "\nProxy server started\n"
 else
-  printf "\nFAILED: Failed to start reverse proxy server\n\n"
+  printf "\nFAILED: Failed to start reverse proxy server\n"
 fi
 
-# start rclone dlna server
-rclone serve dlna --name DLNA --addr localhost:7879 qsc-r:DLNA &
-RCLONE_PID=$!
 
 # start a python ssdp server
 python ~/dlna-proxy/ssdp.py 192.168.1.100 7879 &
 SSDP_PID=$1
+printf "\nPython SSDP server started\n"
 
+# start rclone dlna server
+rclone serve dlna --name DLNA --addr localhost:7879 qsc-r:DLNA &
+RCLONE_PID=$!
+printf "\nRclone server started\n"
 
 # wait for the rclone serve and python ssdp process to be interrupted (Ctrl+C)
 wait $RCLONE_PID 
