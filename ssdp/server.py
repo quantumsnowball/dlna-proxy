@@ -7,8 +7,12 @@ import uuid
 class Server:
     ssdp_ip = "239.255.255.250"
     ssdp_port = 1900
-    location = "http://192.168.1.88:7879/rootDesc.xml"
+    host = '192.168.1.88'
+    port = '7879'
+    document = 'rootDesc.xml'
+    location = f'http://{host}:{port}/{document}'
     media_type = "urn:schemas-upnp-org:device:MediaServer:1"
+    server_type = "Linux/3.4 DLNADOC/1.50 UPnP/1.0 DMS/1.0"
     uuid = uuid.uuid4()
 
     def __init__(self) -> None:
@@ -21,7 +25,7 @@ class Server:
                 f'HOST: {self.ssdp_ip}:{self.ssdp_port}',
                 f'NT: {nt}',
                 'NTS: ssdp:alive',
-                'SERVER: Linux/3.4 DLNADOC/1.50 UPnP/1.0 DMS/1.0',
+                f'SERVER: {self.server_type}',
                 f'USN: uuid:{self.uuid}::{self.media_type}',
                 'CACHE-CONTROL: max-age=1800',
                 f'LOCATION: {self.location}',
@@ -53,7 +57,7 @@ class Server:
                 'Cache-Control: max-age=1800',
                 'Ext: ',
                 f'Location: {self.location}',
-                'Server: Linux/3.4 DLNADOC/1.50 UPnP/1.0 DMS/1.0',
+                f'Server: {self.server_type}',
                 f'St: {self.media_type}',
                 f'Usn: uuid:{self.uuid}::{self.media_type}',
                 'Content-Length: 0',
