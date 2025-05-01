@@ -7,7 +7,7 @@ import uuid
 class Server:
     ssdp_ip = "239.255.255.250"
     ssdp_port = 1900
-    host = '192.168.1.88'
+    host = '192.168.1.100'
     port = '7879'
     document = 'rootDesc.xml'
     location = f'http://{host}:{port}/{document}'
