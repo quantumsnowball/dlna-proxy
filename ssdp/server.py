@@ -7,26 +7,28 @@ import time
 class Server:
     ssdp_ip = "239.255.255.250"
     ssdp_port = 1900
-    location = "http://192.168.1.88:7879/"
+    location = "http://192.168.1.88:7879/rootDesc.xml"
     media_type = "urn:schemas-upnp-org:device:MediaServer:1"
 
     def __init__(self) -> None:
         pass
 
     def advertise(self) -> None:
-        message = (
-            'NOTIFY * HTTP/1.1'
-            f'HOST: {self.ssdp_ip}:{self.ssdp_port}'
-            'CACHE-CONTROL: max-age=1800'
-            f'LOCATION: {self.location}'
-            'SERVER: Linux/3.10 UPnP/1.0 DLNA/1.5'
-            f'ST: {self.media_type}'
-            f'USN: uuid:my-rclone-dlna::{self.media_type}'
-        ).replace("\n", "\r\n").encode("utf-8")
+        def message() -> bytes:
+            return '\r\n'.join((
+                'NOTIFY * HTTP/1.1',
+                f'HOST: {self.ssdp_ip}:{self.ssdp_port}',
+                'NT:',
+                'NTS: ssdp:alive',
+                'SERVER: Linux/3.10 UPnP/1.0 DLNA/1.5',
+                f'USN: uuid:rclone-serve-dlna::{self.media_type}',
+                'CACHE-CONTROL: max-age=1800',
+                f'LOCATION: {self.location}',
+            )).encode("utf-8")
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
         for _ in range(5):
-            sock.sendto(message, (self.ssdp_ip, self.ssdp_port))
+            sock.sendto(message(), (self.ssdp_ip, self.ssdp_port))
             print("Broadcasted SSDP NOTIFY message.")
 
     def listen(self) -> None:
