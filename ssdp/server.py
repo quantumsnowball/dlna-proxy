@@ -45,27 +45,27 @@ class Server:
         mreq += struct.pack(b"@I", socket.INADDR_ANY)
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 1)
+
+        def message() -> bytes:
+            return '\r\n'.join((
+                'HTTP/1.1 200 OK',
+                'CACHE-CONTROL: max-age=1800',
+                f'DATE: {time.strftime('%a, %d %b %Y %H:%M:%S GMT')}',
+                'EXT:',
+                f'LOCATION: {self.location}',
+                'SERVER: Linux/3.10 UPnP/1.0 DLNA/1.5',
+                f'ST: {self.media_type}',
+                f'USN: uuid:my-rclone-dlna::{self.media_type}',
+            )).encode('utf-8')
         try:
             sock.bind(('0.0.0.0', self.ssdp_port))
             print(f"Listening for SSDP M-SEARCH requests on port {self.ssdp_port}...")
 
             while True:
                 data, addr = sock.recvfrom(1024)
-                # if b"M-SEARCH" in data:
-                print(f"Received M-SEARCH from {addr}, sending reply...")
-                response = (
-                    'HTTP/1.1 200 OK'
-                    'CACHE-CONTROL: max-age=1800'
-                    f'DATE: {time.strftime('%a, %d %b %Y %H:%M:%S GMT')}'
-                    'EXT:'
-                    f'LOCATION: {self.location}'
-                    'SERVER: Linux/3.10 UPnP/1.0 DLNA/1.5'
-                    f'ST: {self.media_type}'
-                    f'USN: uuid:my-rclone-dlna::{self.media_type}'
-                ).encode('utf-8')
-
-                sock.sendto(response, addr)
-                print(f'sendto() {addr=}')
+                if data.startswith(b"M-SEARCH"):
+                    sock.sendto(message(), addr)
+                    print(f"Received M-SEARCH from {addr}, replied")
         except Exception as e:
             print(e)
         finally:
