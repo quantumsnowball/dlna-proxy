@@ -1,4 +1,5 @@
 import socket
+import struct
 import time
 
 
@@ -28,60 +29,41 @@ class Server:
             sock.sendto(message, (self.SSDP_ADDR, self.SSDP_PORT))
             print("Broadcasted SSDP NOTIFY message.")
 
-# def broadcast_ssdp():
-#     message = f"""NOTIFY * HTTP/1.1
-# HOST: {SSDP_ADDR}:{SSDP_PORT}
-# CACHE-CONTROL: max-age=1800
-# LOCATION: {DLNA_LOCATION}
-# SERVER: Linux/3.10 UPnP/1.0 DLNA/1.5
-# ST: {MEDIA_TYPE}
-# USN: uuid:my-rclone-dlna::{MEDIA_TYPE}
-# """.replace("\n", "\r\n").encode("utf-8")
-#     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-#     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
-#     for _ in range(5):
-#         sock.sendto(message, (SSDP_ADDR, SSDP_PORT))
-#         print("Broadcasted SSDP NOTIFY message.")
-#
-#
-# # Function to listen for M-SEARCH requests and reply
-# def listen_for_msearch():
-#     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-#     try:
-#         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-#         sock.bind(('0.0.0.0', SSDP_PORT))
-#         print(f"Listening for SSDP M-SEARCH requests on port {SSDP_PORT}...")
-#
-#         while True:
-#             data, addr = sock.recvfrom(1024)
-#             # if b"M-SEARCH" in data:
-#             if addr[0] == '192.168.1.56':
-#                 print(f"Received M-SEARCH from {addr}, sending reply...")
-#                 response = f"""HTTP/1.1 200 OK
-# CACHE-CONTROL: max-age=1800
-# DATE: {time.strftime('%a, %d %b %Y %H:%M:%S GMT')}
-# EXT:
-# LOCATION: {DLNA_LOCATION}
-# SERVER: Linux/3.10 UPnP/1.0 DLNA/1.5
-# ST: {MEDIA_TYPE}
-# USN: uuid:my-rclone-dlna::{MEDIA_TYPE}
-#
-# """
-#                 sock.sendto(response.encode(), addr)
-#                 print(f'sendto() {addr=}')
-#     except Exception as e:
-#         print(e)
-#     finally:
-#         sock.close()
-#
+    def listen(self) -> None:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        mreq = socket.inet_aton(self.SSDP_ADDR)
+        mreq += struct.pack(b"@I", socket.INADDR_ANY)
+        sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+        sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 1)
+        try:
+            sock.bind(('0.0.0.0', self.SSDP_PORT))
+            print(f"Listening for SSDP M-SEARCH requests on port {self.SSDP_PORT}...")
 
-# Run broadcast once at startup
-# broadcast_ssdp()
+            while True:
+                data, addr = sock.recvfrom(1024)
+                # if b"M-SEARCH" in data:
+                print(f"Received M-SEARCH from {addr}, sending reply...")
+                response = (
+                    'HTTP/1.1 200 OK'
+                    'CACHE-CONTROL: max-age=1800'
+                    f'DATE: {time.strftime('%a, %d %b %Y %H:%M:%S GMT')}'
+                    'EXT:'
+                    f'LOCATION: {self.DLNA_LOCATION}'
+                    'SERVER: Linux/3.10 UPnP/1.0 DLNA/1.5'
+                    f'ST: {self.MEDIA_TYPE}'
+                    f'USN: uuid:my-rclone-dlna::{self.MEDIA_TYPE}'
+                ).encode('utf-8')
 
-# Start listening for M-SEARCH
-# listen_for_msearch()
+                sock.sendto(response, addr)
+                print(f'sendto() {addr=}')
+        except Exception as e:
+            print(e)
+        finally:
+            sock.close()
 
 
 if __name__ == "__main__":
     server = Server()
     server.advertise()
+    server.listen()
