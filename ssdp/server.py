@@ -9,27 +9,34 @@ class Server:
     ssdp_port = 1900
     location = "http://192.168.1.88:7879/rootDesc.xml"
     media_type = "urn:schemas-upnp-org:device:MediaServer:1"
+    uuid = 'rclone-serve-dlna'
 
     def __init__(self) -> None:
         pass
 
     def advertise(self) -> None:
-        def message() -> bytes:
+        def message(nt: str) -> bytes:
             return '\r\n'.join((
                 'NOTIFY * HTTP/1.1',
                 f'HOST: {self.ssdp_ip}:{self.ssdp_port}',
-                'NT:',
+                f'NT: {nt}',
                 'NTS: ssdp:alive',
                 'SERVER: Linux/3.10 UPnP/1.0 DLNA/1.5',
-                f'USN: uuid:rclone-serve-dlna::{self.media_type}',
+                f'USN: uuid:{self.uuid}::{self.media_type}',
                 'CACHE-CONTROL: max-age=1800',
                 f'LOCATION: {self.location}',
             )).encode("utf-8")
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
-        for _ in range(5):
-            sock.sendto(message(), (self.ssdp_ip, self.ssdp_port))
-            print("Broadcasted SSDP NOTIFY message.")
+        for nt in (
+            'urn:microsoft.com:service:X_MS_MediaReceiverRegistrar:1',
+            f'uuid:{self.uuid}',
+            'urn:schemas-upnp-org:service:ConnectionManager:1',
+            'upnp:rootdevice',
+            'urn:schemas-upnp-org:service:ContentDirectory:1',
+            'urn:schemas-upnp-org:device:MediaServer:1',
+        ):
+            sock.sendto(message(nt), (self.ssdp_ip, self.ssdp_port))
 
     def listen(self) -> None:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
