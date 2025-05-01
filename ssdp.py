@@ -1,7 +1,11 @@
 import argparse
+import logging
 import socket
 import struct
 import uuid
+
+logging.basicConfig(level=logging.WARNING)
+logger = logging.getLogger('ssdp.py')
 
 
 class Server:
@@ -42,7 +46,7 @@ class Server:
         ):
             sock.sendto(message(nt), (self.ssdp_ip, self.ssdp_port))
 
-        print('Python custom SSDP server started\n')
+        logger.info('Python custom SSDP server started')
 
     def listen(self) -> None:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -66,15 +70,16 @@ class Server:
             )).encode('utf-8')
         try:
             sock.bind(('0.0.0.0', self.ssdp_port))
-            print(f"Listening for SSDP M-SEARCH requests on port {self.ssdp_port}...")
+            logger.info(f"Listening for SSDP M-SEARCH requests on port {self.ssdp_port}...")
 
             while True:
                 data, addr = sock.recvfrom(1024)
                 if data.startswith(b"M-SEARCH"):
                     sock.sendto(message(), addr)
+                    logger.debug(f'sock.sendto(message, {addr=})')
 
         except Exception as e:
-            print(e)
+            logger.error(e)
         finally:
             sock.close()
 
