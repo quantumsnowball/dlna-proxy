@@ -5,10 +5,10 @@ import time
 
 # SSDP Multicast address and port
 class Server:
-    SSDP_ADDR = "239.255.255.250"
-    SSDP_PORT = 1900
-    DLNA_LOCATION = "http://192.168.1.88:7879/"  # Replace with your rclone serve DLNA location
-    MEDIA_TYPE = "urn:schemas-upnp-org:device:MediaServer:1"
+    ssdp_ip = "239.255.255.250"
+    ssdp_port = 1900
+    location = "http://192.168.1.88:7879/"
+    media_type = "urn:schemas-upnp-org:device:MediaServer:1"
 
     def __init__(self) -> None:
         pass
@@ -16,29 +16,29 @@ class Server:
     def advertise(self) -> None:
         message = (
             'NOTIFY * HTTP/1.1'
-            f'HOST: {self.SSDP_ADDR}:{self.SSDP_PORT}'
+            f'HOST: {self.ssdp_ip}:{self.ssdp_port}'
             'CACHE-CONTROL: max-age=1800'
-            f'LOCATION: {self.DLNA_LOCATION}'
+            f'LOCATION: {self.location}'
             'SERVER: Linux/3.10 UPnP/1.0 DLNA/1.5'
-            f'ST: {self.MEDIA_TYPE}'
-            f'USN: uuid:my-rclone-dlna::{self.MEDIA_TYPE}'
+            f'ST: {self.media_type}'
+            f'USN: uuid:my-rclone-dlna::{self.media_type}'
         ).replace("\n", "\r\n").encode("utf-8")
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
         for _ in range(5):
-            sock.sendto(message, (self.SSDP_ADDR, self.SSDP_PORT))
+            sock.sendto(message, (self.ssdp_ip, self.ssdp_port))
             print("Broadcasted SSDP NOTIFY message.")
 
     def listen(self) -> None:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        mreq = socket.inet_aton(self.SSDP_ADDR)
+        mreq = socket.inet_aton(self.ssdp_ip)
         mreq += struct.pack(b"@I", socket.INADDR_ANY)
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 1)
         try:
-            sock.bind(('0.0.0.0', self.SSDP_PORT))
-            print(f"Listening for SSDP M-SEARCH requests on port {self.SSDP_PORT}...")
+            sock.bind(('0.0.0.0', self.ssdp_port))
+            print(f"Listening for SSDP M-SEARCH requests on port {self.ssdp_port}...")
 
             while True:
                 data, addr = sock.recvfrom(1024)
@@ -49,10 +49,10 @@ class Server:
                     'CACHE-CONTROL: max-age=1800'
                     f'DATE: {time.strftime('%a, %d %b %Y %H:%M:%S GMT')}'
                     'EXT:'
-                    f'LOCATION: {self.DLNA_LOCATION}'
+                    f'LOCATION: {self.location}'
                     'SERVER: Linux/3.10 UPnP/1.0 DLNA/1.5'
-                    f'ST: {self.MEDIA_TYPE}'
-                    f'USN: uuid:my-rclone-dlna::{self.MEDIA_TYPE}'
+                    f'ST: {self.media_type}'
+                    f'USN: uuid:my-rclone-dlna::{self.media_type}'
                 ).encode('utf-8')
 
                 sock.sendto(response, addr)
