@@ -1,6 +1,5 @@
 import socket
 import struct
-import time
 
 
 # SSDP Multicast address and port
@@ -21,7 +20,7 @@ class Server:
                 f'HOST: {self.ssdp_ip}:{self.ssdp_port}',
                 f'NT: {nt}',
                 'NTS: ssdp:alive',
-                'SERVER: Linux/3.10 UPnP/1.0 DLNA/1.5',
+                'SERVER: Linux/3.4 DLNADOC/1.50 UPnP/1.0 DMS/1.0',
                 f'USN: uuid:{self.uuid}::{self.media_type}',
                 'CACHE-CONTROL: max-age=1800',
                 f'LOCATION: {self.location}',
@@ -49,13 +48,13 @@ class Server:
         def message() -> bytes:
             return '\r\n'.join((
                 'HTTP/1.1 200 OK',
-                'CACHE-CONTROL: max-age=1800',
-                f'DATE: {time.strftime('%a, %d %b %Y %H:%M:%S GMT')}',
-                'EXT:',
-                f'LOCATION: {self.location}',
-                'SERVER: Linux/3.10 UPnP/1.0 DLNA/1.5',
-                f'ST: {self.media_type}',
-                f'USN: uuid:my-rclone-dlna::{self.media_type}',
+                'Cache-Control: max-age=1800',
+                'Ext: ',
+                f'Location: {self.location}',
+                'Server: Linux/3.4 DLNADOC/1.50 UPnP/1.0 DMS/1.0',
+                f'St: {self.media_type}',
+                f'Usn: uuid:{self.uuid}::{self.media_type}',
+                'Content-Length: 0'
             )).encode('utf-8')
         try:
             sock.bind(('0.0.0.0', self.ssdp_port))
