@@ -1,5 +1,6 @@
 import socket
 import struct
+import uuid
 
 
 # SSDP Multicast address and port
@@ -8,7 +9,7 @@ class Server:
     ssdp_port = 1900
     location = "http://192.168.1.88:7879/rootDesc.xml"
     media_type = "urn:schemas-upnp-org:device:MediaServer:1"
-    uuid = 'rclone-serve-dlna'
+    uuid = uuid.uuid4()
 
     def __init__(self) -> None:
         pass
