@@ -4,15 +4,19 @@
 cleanup() {
   # after use, try to stop all existing server
   if nginx -s stop 2>/dev/null; then
-    printf "\nProxy server stopped\n\n"
+    [ "$1" != "quiet" ] && printf "\nProxy server stopped\n"
   fi
   killall -q -v -w nginx 2>/dev/null
+
   killall -q -v -w rclone 2>/dev/null
+  [ "$1" != "quiet" ] && printf "\nRclone server stoppped\n"
+
   killall -q -v -w python 2>/dev/null
+  [ "$1" != "quiet" ] && printf "\nPython SSDP server stoppped\n"
 }
 
 # before use, try to stop all existing server
-cleanup
+cleanup quiet
 
 # start nginx reverse proxy server
 nginx -c ~/dlna-proxy/nginx.conf
