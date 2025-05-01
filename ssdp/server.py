@@ -29,7 +29,7 @@ class Server:
                 f'USN: uuid:{self.uuid}::{self.media_type}',
                 'CACHE-CONTROL: max-age=1800',
                 f'LOCATION: {self.location}',
-                '',
+                '\r\n',
             )).encode("utf-8")
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
@@ -61,7 +61,7 @@ class Server:
                 f'St: {self.media_type}',
                 f'Usn: uuid:{self.uuid}::{self.media_type}',
                 'Content-Length: 0',
-                '',
+                '\r\n',
             )).encode('utf-8')
         try:
             sock.bind(('0.0.0.0', self.ssdp_port))
