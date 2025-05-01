@@ -43,6 +43,8 @@ class Server:
         ):
             sock.sendto(message(nt), (self.ssdp_ip, self.ssdp_port))
 
+        print('Python custom SSDP server started\n')
+
     def listen(self) -> None:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -71,7 +73,7 @@ class Server:
                 data, addr = sock.recvfrom(1024)
                 if data.startswith(b"M-SEARCH"):
                     sock.sendto(message(), addr)
-                    print(f"Received M-SEARCH from {addr}, replied")
+
         except Exception as e:
             print(e)
         finally:
