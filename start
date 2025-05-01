@@ -18,7 +18,7 @@ rclone serve dlna --name DLNA --addr localhost:7879 qsc-r:DLNA &
 RCLONE_PID=$!
 
 # start a python ssdp server
-python ~/dlna-proxy/ssdp.py &
+python ~/dlna-proxy/ssdp.py 192.168.1.100 7879 &
 SSDP_PID=$1
 
 

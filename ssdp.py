@@ -1,22 +1,21 @@
+import argparse
 import socket
 import struct
 import uuid
 
 
-# SSDP Multicast address and port
 class Server:
     ssdp_ip = "239.255.255.250"
     ssdp_port = 1900
-    host = '192.168.1.100'
-    port = '7879'
     document = 'rootDesc.xml'
-    location = f'http://{host}:{port}/{document}'
     media_type = "urn:schemas-upnp-org:device:MediaServer:1"
     server_type = "Linux/3.4 DLNADOC/1.50 UPnP/1.0 DMS/1.0"
     uuid = uuid.uuid4()
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, host: str, port: str) -> None:
+        self.host = host
+        self.port = port
+        self.location = f'http://{host}:{port}/{self.document}'
 
     def advertise(self) -> None:
         def message(nt: str) -> bytes:
@@ -81,6 +80,11 @@ class Server:
 
 
 if __name__ == "__main__":
-    server = Server()
+    parser = argparse.ArgumentParser(description='Start the server.')
+    parser.add_argument('host', type=str, help="server's ip address")
+    parser.add_argument('port', type=int, help="server's port")
+    args = parser.parse_args()
+
+    server = Server(args.host, args.port)
     server.advertise()
     server.listen()
