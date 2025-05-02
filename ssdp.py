@@ -65,19 +65,6 @@ class Server:
 
     # listen to discovery SSDP query and answer them
     def listen(self) -> None:
-        # default use ipv4 UDP socket
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-        # allow address reuse
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        # convert to binary format addr
-        mreq = socket.inet_aton(self.ssdp_ip)
-        # listen on any interface
-        mreq += struct.pack(b"@I", socket.INADDR_ANY)
-        # join the SSDP multicast group
-        sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-        # also receive multicast packet sent by myself
-        sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 1)
-
         # message format
         def message() -> bytes:
             return '\r\n'.join((
@@ -91,6 +78,19 @@ class Server:
                 'Content-Length: 0',
                 '\r\n',  # important empty line at the end, otherwise syntax error
             )).encode('utf-8')
+
+        # default use ipv4 UDP socket
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        # allow address reuse
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # convert to binary format addr
+        mreq = socket.inet_aton(self.ssdp_ip)
+        # listen on any interface
+        mreq += struct.pack(b"@I", socket.INADDR_ANY)
+        # join the SSDP multicast group
+        sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+        # also receive multicast packet sent by myself
+        sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 1)
 
         try:
             # list on all interface on port 1900
